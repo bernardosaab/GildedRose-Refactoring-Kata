@@ -36,6 +36,12 @@ class GildedRose(object):
         item.sell_in = item.sell_in - 1
         if item.sell_in < 0:
             item.quality = 0    
+
+    def _update_normal_item(self, item):
+        self._decrease_quality(item)
+        item.sell_in = item.sell_in - 1
+        if item.sell_in < 0:
+            self._decrease_quality(item)
     
     def _update_item(self, item):
         if item.name == SULFURAS:
@@ -49,10 +55,7 @@ class GildedRose(object):
             self._update_backstage_passes(item)
             return
         
-        self._decrease_quality(item)
-        item.sell_in = item.sell_in - 1
-        if item.sell_in < 0:
-            self._decrease_quality(item)
+        self._update_normal_item(item)
 
 
 class Item:
