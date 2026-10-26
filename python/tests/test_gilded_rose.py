@@ -144,6 +144,39 @@ class BackstagePassesTest(unittest.TestCase):
         item = update_item("Backstage passes to a TAFKAL80ETC concert", 1, 10)
         self.assertEqual(0, item.sell_in)
         self.assertEqual(13, item.quality)
-    
+
+class ConjuredItemTest(unittest.TestCase):
+
+    def test_conjured_item_degrades_twice_as_fast(self):
+        item = update_item("Conjured Mana Cake", 5, 10)
+        self.assertEqual(4, item.sell_in)
+        self.assertEqual(8, item.quality)
+
+    def test_conjured_item_degrades_by_4_on_sell_in_date(self):
+        item = update_item("Conjured Mana Cake", 0, 20)
+        self.assertEqual(-1, item.sell_in)
+        self.assertEqual(16, item.quality)
+
+    def test_conjured_item_degrades_by_4_after_sell_in_date(self):
+        item = update_item("Conjured Mana Cake", -1, 10)
+        self.assertEqual(-2, item.sell_in)
+        self.assertEqual(6, item.quality)
+
+    def test_conjured_item_quality_never_negative_degrades_by_4(self):
+        item = update_item("Conjured Mana Cake", 0, 3)
+        self.assertEqual(-1, item.sell_in)
+        self.assertEqual(0, item.quality)
+
+    def test_conjured_item_quality_never_negative_degrades_by_2(self):
+        item = update_item("Conjured Mana Cake", 5, 1)
+        self.assertEqual(4, item.sell_in)
+        self.assertEqual(0, item.quality)
+
+    def test_conjured_item_quality_stays_non_negative(self):
+        item = update_item("Conjured Mana Cake", 5, 0)
+        self.assertEqual(4, item.sell_in)
+        self.assertEqual(0, item.quality)
+
+
 if __name__ == '__main__':
     unittest.main()
