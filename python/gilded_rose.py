@@ -26,6 +26,16 @@ class GildedRose(object):
         item.sell_in = item.sell_in - 1
         if item.sell_in < 0:
             self._increase_quality(item)
+
+    def _update_backstage_passes(self, item):
+        self._increase_quality(item)
+        if item.sell_in < 11:
+            self._increase_quality(item)
+        if item.sell_in < 6:
+            self._increase_quality(item)
+        item.sell_in = item.sell_in - 1
+        if item.sell_in < 0:
+            item.quality = 0    
     
     def _update_item(self, item):
         if item.name == SULFURAS:
@@ -34,21 +44,15 @@ class GildedRose(object):
         if item.name == AGED_BRIE:
             self._update_aged_brie(item)
             return
-        
+
         if item.name == BACKSTAGE_PASSES:
-            self._increase_quality(item)
-            if item.sell_in < 11:
-                self._increase_quality(item)
-            if item.sell_in < 6:
-                self._increase_quality(item)
-        else:
-            self._decrease_quality(item)
+            self._update_backstage_passes(item)
+            return
+        
+        self._decrease_quality(item)
         item.sell_in = item.sell_in - 1
         if item.sell_in < 0:
-            if item.name == BACKSTAGE_PASSES:
-                item.quality = 0
-            else:
-                self._decrease_quality(item)
+            self._decrease_quality(item)
 
 
 class Item:
