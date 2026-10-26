@@ -14,6 +14,9 @@ class GildedRose(object):
             self._update_item(item)
     
     def _update_item(self, item):
+        if item.name == SULFURAS:
+            return
+
         if item.name != AGED_BRIE and item.name != BACKSTAGE_PASSES:
             if item.quality > 0:
                 if item.name != SULFURAS:
