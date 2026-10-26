@@ -9,6 +9,14 @@ class GildedRose(object):
     def __init__(self, items):
         self.items = items
 
+    def _increase_quality(self, item):
+        if item.quality < 50:
+            item.quality = item.quality + 1
+
+    def _decrease_quality(self, item):
+        if item.quality > 0:
+            item.quality = item.quality - 1
+
     def update_quality(self):
         for item in self.items:
             self._update_item(item)
@@ -16,34 +24,25 @@ class GildedRose(object):
     def _update_item(self, item):
         if item.name == SULFURAS:
             return
-
+        
         if item.name != AGED_BRIE and item.name != BACKSTAGE_PASSES:
-            if item.quality > 0:
-                if item.name != SULFURAS:
-                    item.quality = item.quality - 1
+            self._decrease_quality(item)
         else:
-            if item.quality < 50:
-                item.quality = item.quality + 1
-                if item.name == BACKSTAGE_PASSES:
-                    if item.sell_in < 11:
-                        if item.quality < 50:
-                            item.quality = item.quality + 1
-                    if item.sell_in < 6:
-                        if item.quality < 50:
-                            item.quality = item.quality + 1
-        if item.name != SULFURAS:
-            item.sell_in = item.sell_in - 1
+            self._increase_quality(item)
+            if item.name == BACKSTAGE_PASSES:
+                if item.sell_in < 11:
+                    self._increase_quality(item)
+                if item.sell_in < 6:
+                    self._increase_quality(item)
+        item.sell_in = item.sell_in - 1
         if item.sell_in < 0:
             if item.name != AGED_BRIE:
                 if item.name != BACKSTAGE_PASSES:
-                    if item.quality > 0:
-                        if item.name != SULFURAS:
-                            item.quality = item.quality - 1
+                    self._decrease_quality(item)
                 else:
-                    item.quality = item.quality - item.quality
+                    item.quality = 0
             else:
-                if item.quality < 50:
-                    item.quality = item.quality + 1
+                self._increase_quality(item)
 
 
 class Item:
