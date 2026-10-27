@@ -3,6 +3,8 @@
 AGED_BRIE = "Aged Brie"
 SULFURAS = "Sulfuras, Hand of Ragnaros"
 BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert"
+CONJURED = "Conjured"
+
 
 class GildedRose(object):
 
@@ -42,9 +44,23 @@ class GildedRose(object):
         item.sell_in = item.sell_in - 1
         if item.sell_in < 0:
             self._decrease_quality(item)
-    
+
+    def _update_conjured_item(self, item):
+        self._decrease_quality(item)
+        self._decrease_quality(item)
+        item.sell_in = item.sell_in - 1
+        if item.sell_in < 0:
+            self._decrease_quality(item)
+            self._decrease_quality(item)
+
+
+ 
     def _update_item(self, item):
         if item.name == SULFURAS:
+            return
+        
+        if item.name.startswith(CONJURED):
+            self._update_conjured_item(item)
             return
 
         if item.name == AGED_BRIE:
