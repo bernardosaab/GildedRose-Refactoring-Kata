@@ -6,10 +6,8 @@ BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert"
 CONJURED = "Conjured"
 
 
-class GildedRose(object):
-
-    def __init__(self, items):
-        self.items = items
+class ItemUpdater:
+    """Shared quality adjustment helpers for item updaters."""
 
     def _increase_quality(self, item):
         if item.quality < 50:
@@ -19,59 +17,84 @@ class GildedRose(object):
         if item.quality > 0:
             item.quality = item.quality - 1
 
-    def update_quality(self):
-        for item in self.items:
-            self._update_item(item)
 
-    def _update_aged_brie(self, item):
+class NormalItemUpdater(ItemUpdater):
+    def update(self, item):
+        self._decrease_quality(item)
+        item.sell_in -= 1
+
+        if item.sell_in < 0:
+            self._decrease_quality(item)
+
+
+class AgedBrieUpdater(ItemUpdater):
+    def update(self, item):
         self._increase_quality(item)
-        item.sell_in = item.sell_in - 1
+        item.sell_in -= 1
+
         if item.sell_in < 0:
             self._increase_quality(item)
 
-    def _update_backstage_passes(self, item):
+
+class BackstagePassUpdater(ItemUpdater):
+    def update(self, item):
         self._increase_quality(item)
+
         if item.sell_in < 11:
             self._increase_quality(item)
+
         if item.sell_in < 6:
             self._increase_quality(item)
-        item.sell_in = item.sell_in - 1
-        if item.sell_in < 0:
-            item.quality = 0    
 
-    def _update_normal_item(self, item):
-        self._decrease_quality(item)
-        item.sell_in = item.sell_in - 1
-        if item.sell_in < 0:
-            self._decrease_quality(item)
+        item.sell_in -= 1
 
-    def _update_conjured_item(self, item):
+        if item.sell_in < 0:
+            item.quality = 0
+
+
+class ConjuredItemUpdater(ItemUpdater):
+    def update(self, item):
         self._decrease_quality(item)
         self._decrease_quality(item)
-        item.sell_in = item.sell_in - 1
+        item.sell_in -= 1
+
         if item.sell_in < 0:
             self._decrease_quality(item)
             self._decrease_quality(item)
 
 
- 
-    def _update_item(self, item):
-        if item.name == SULFURAS:
-            return
-        
-        if item.name.startswith(CONJURED):
-            self._update_conjured_item(item)
-            return
+class SulfurasUpdater(ItemUpdater):
+    def update(self, item):
+        # Sulfuras never changes.
+        pass
 
-        if item.name == AGED_BRIE:
-            self._update_aged_brie(item)
-            return
 
-        if item.name == BACKSTAGE_PASSES:
-            self._update_backstage_passes(item)
-            return
-        
-        self._update_normal_item(item)
+# Updaters are stateless, so one shared instance of each is enough.
+UPDATERS = {
+    AGED_BRIE: AgedBrieUpdater(),
+    SULFURAS: SulfurasUpdater(),
+    BACKSTAGE_PASSES: BackstagePassUpdater(),
+}
+
+CONJURED_UPDATER = ConjuredItemUpdater()
+NORMAL_UPDATER = NormalItemUpdater()
+
+
+def get_updater(item):
+    """Select the updater that handles this item."""
+    if item.name.startswith(CONJURED):
+        return CONJURED_UPDATER
+
+    return UPDATERS.get(item.name, NORMAL_UPDATER)
+
+
+class GildedRose(object):
+    def __init__(self, items):
+        self.items = items
+
+    def update_quality(self):
+        for item in self.items:
+            get_updater(item).update(item)
 
 
 class Item:
